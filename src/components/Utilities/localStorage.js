@@ -1,31 +1,42 @@
 const getLocalData=()=>{
-    let cart=JSON.parse(localStorage.getItem('cart'))
+    let cart=JSON.parse(localStorage.getItem('shopping-cart'))
     if(!cart){
         cart={}
     }
     return cart;
 }
 
-const addCartDB=(title)=>{
+const addCartDB=(id)=>{
     let cart=getLocalData()
-    let newQuantity=cart[title]
+    let newQuantity=cart[id]
     if(newQuantity){
-        cart[title]=newQuantity+1
+        cart[id]=newQuantity+1
     }
     else{
-        cart[title]=1
+        cart[id]=1
     }
-    localStorage.setItem('cart',JSON.stringify(cart))
+    localStorage.setItem('shopping-cart',JSON.stringify(cart))
 }
 
 const clearDB=()=>{
-    localStorage.removeItem('cart')
+    localStorage.clear('shopping-cart')
 }
 
 
-
+const removeFromDb = id =>{
+    const storedCart = localStorage.getItem('shopping-cart');
+    if(storedCart){
+        const shoppingCart = JSON.parse(storedCart);
+        if(id in shoppingCart){
+            delete shoppingCart[id];
+            localStorage.setItem('shopping-cart', JSON.stringify(shoppingCart));
+        }
+    }
+}
 
 export {
     addCartDB,
-    clearDB
+    clearDB,
+    getLocalData,
+    removeFromDb,
 }

@@ -2,62 +2,54 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Product from '../Product/Product';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faArrowRight, faDeleteLeft} from '@fortawesome/free-solid-svg-icons'
-import { addCartDB, clearDB } from '../Utilities/localStorage';
+import { addCartDB, clearDB, getLocalData } from '../Utilities/localStorage';
+import OrderSummary from '../OrderSummary/OrderSummary';
+import { Link, useLoaderData } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 const Shop = () => {
-    let [productData,setproductData]=useState([])
-    useEffect(()=>{
-        fetch('products.json')
-        .then(res=>res.json())
-        .then(data=>setproductData(data))
-    },[])
-
     let [cartProduct,setCartProduct]=useState([])
-    let [shipping,setShipping]=useState(0)
-    let [total,setTotal]=useState(0)
-    let [tax,setTax]=useState(0)
-    let [grandTotal,setGrandTotal]=useState(0)
 
+    let {products:productData}=useLoaderData()
 
+    //order summery from localstorage
+    useEffect(()=>{
+        let cart= getLocalData()
+        let newCart=[]
+       for(let id in cart){
+        let exit=productData.find(products=>products.id===id)
+        if(exit){
+            exit.quantity=cart[id]
+            newCart.push(exit)
+        }
+       }
+       setCartProduct(newCart)
+  
+    },[productData])
+
+    // add to cart handler
     const handleAddToCart=(product)=>{
-        let newCart=[...cartProduct,product]
-        setShipping(6)
-        setCartProduct(newCart)
-        addCartDB(product.name)
+      let exit=cartProduct.find(products=>products.id===product.id)
+      let newArray=[]
+      if(!exit){
+        product.quantity=1
+        newArray=[...cartProduct,product]
+      }
+      else{
+        let rest=cartProduct.filter(products=>products.id!==product.id)
+        product.quantity=product.quantity+1;
+        newArray=[...rest,product]
+      }
+      setCartProduct(newArray)
+      addCartDB(product.id)
     }
-    useEffect(()=>{
-        let totals=cartProduct.reduce((prev,current)=>{
-            return prev+current.price
-        },0)
-        setTotal(totals)
-    },[cartProduct])
 
-    // useEffect(()=>{
-        
-    // },[total])
-
-    useEffect(()=>{
-        let res=(total+shipping)*5/100
-        setTax(parseInt(res))
-    },[total])
-
-    useEffect(()=>{
-        let grand=tax+total+shipping
-        setGrandTotal(grand)
-    },[tax])
-
-
-    const clear=()=>{
-        setCartProduct([])
-        setTotal(0)
-        setShipping(0)
-        setTax(0)
-        setGrandTotal(0)
+    const clearCart=()=>{
         clearDB()
+        setCartProduct([])
     }
-   
+
 
     return (
         <div className='grid grid-cols-5'>
@@ -69,25 +61,11 @@ const Shop = () => {
                 </div>
             </div>
             <div className='col-span-1 bg-[#FFE0B3] py-10 px-5'>
-               <h2 className='text-2xl font-semibold text-center pb-10'>Order Summary</h2>
-               <div className='text-left capitalize'>
-                <p className='text-[#2A414F] text-lg leading-10'>selected items: {cartProduct.length}</p>
-                <p className='text-[#2A414F] text-lg leading-10'>Total Price: ${total}</p>
-                <p className='text-[#2A414F] text-lg leading-10'>Total Shipping Charge: ${shipping}</p>
-                <p className='text-[#2A414F] text-lg leading-10'>Tax: ${tax}</p>
-                <p className='text-[#2A414F] text-lg leading-10 font-semibold'>Grand Total : ${grandTotal}</p>
-               </div>
-               <div>
-               <div className=" text-white text-center mt-14 ">
-                <button onClick={clear} className=" py-3 font-medium text-lg w-full bg-[#FF3030] rounded-md capitalize">clear cart
-                <span className='pl-2'><FontAwesomeIcon icon={faDeleteLeft}></FontAwesomeIcon></span>
-                </button>
-                <button className=" py-3 font-medium text-lg w-full bg-[#FF9900] rounded-md capitalize mt-3">Review Order
-                <span className='pl-2'><FontAwesomeIcon icon={faArrowRight}></FontAwesomeIcon></span>
-                </button>
-                
-                </div>
-               </div>
+               <OrderSummary cart={cartProduct} clearCart={clearCart}>
+                    <Link to='/orders' className="px-12 py-3 font-medium text-lg w-full bg-[#FF9900] rounded-md capitalize mt-3">Review Order
+                    <span className='pl-2'><FontAwesomeIcon icon={faArrowRight}></FontAwesomeIcon></span>
+                    </Link>
+               </OrderSummary>
             </div>
         </div>
     );

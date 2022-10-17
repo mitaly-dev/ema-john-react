@@ -1,10 +1,12 @@
 import React from 'react';
 import bannerImg from '../../images/banner.jpg'
 import Modal from '../Modal/Modal';
+import reader from '../../assets/reader.json'
+import Lottie from 'lottie-react'
 
 const Banner = () => {
     return (
-        <div>
+        <div className='h-[91vh]'>
             <div className='flex items-center justify-between px-28 py-10 h-full bg-slate-100'>
             <div>
                 <small className='text-[#FF9900] text-lg'>Sale up to 70% off</small>
@@ -15,7 +17,9 @@ const Banner = () => {
                 <label htmlFor="my-modal-4" className="bg-[#FF9900] py-3 px-5 font-semibold cursor-pointer">SHOP NOW</label>
             </div>
             <div className=''>
-                <img src={bannerImg} alt="" className='w-[80%] float-right' />
+                {/* <img src={bannerImg} alt="" className='w-[80%] float-right' /> */}
+                <Lottie animationData={reader} loop={true}/>
+                
             </div>
         </div>
         <Modal></Modal>
